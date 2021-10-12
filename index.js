@@ -5,6 +5,7 @@
 *   1. Add one patient info
 *   2. List all patients info
 *   3. View one patient info
+*   4. Delete one patient info
 */
 
 var DEFAULT_PORT = 5000
@@ -159,4 +160,17 @@ server.get('/patients/:id', function (req, res, next) {
             res.send(404)
         }
     })
+})
+
+
+// Delete a single patient with the given id
+server.del('/patients/:id', function (req, res, next) {
+    console.log('DEL request: patients/' + req.params.id);
+    Patient.deleteOne({ _id: req.params.id }, function (error, result) {
+        // If there are any errors, pass them to next in the correct format
+        if (error) return next(new Error(JSON.stringify(error.errors)))
+
+        // Send a 200 OK response
+        res.send(result)
+    });
 })
