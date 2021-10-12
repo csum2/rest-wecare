@@ -6,6 +6,7 @@
 *   2. List all patients info
 *   3. View one patient info
 *   4. Delete one patient info
+*   5. Update one patient info
 */
 
 var DEFAULT_PORT = 5000
@@ -173,4 +174,34 @@ server.del('/patients/:id', function (req, res, next) {
         // Send a 200 OK response
         res.send(result)
     });
+})
+
+
+// Upate a patient with the given id
+server.patch('/patients/:id', function (req, res, next) {
+    console.log('PATCH request: patients/' + req.params.id);
+    console.log('PATCH request: patients body=>' + JSON.stringify(req.body));
+
+    // Creating patching patient according to param
+    var obj = new Object();
+    if (req.body.first_name !== undefined) obj.first_name = req.body.first_name
+    if (req.body.last_name !== undefined) obj.last_name = req.body.last_name
+    if (req.body.date_of_birth !== undefined) obj.date_of_birth = req.body.date_of_birth
+    if (req.body.biological_sex !== undefined) obj.biological_sex = req.body.biological_sex
+    if (req.body.email !== undefined) obj.email = req.body.email
+    if (req.body.contact_phone !== undefined) obj.contact_phone = req.body.contact_phone
+    if (req.body.residential_address !== undefined) obj.residential_address = req.body.residential_address
+    if (req.body.emergency_contact !== undefined) obj.emergency_contact = req.body.emergency_contact
+    if (req.body.emergency_phone !== undefined) obj.emergency_phone = req.body.emergency_phone
+    if (req.body.relationship !== undefined) obj.relationship = req.body.relationship
+
+    console.log('Patch patient fields =>' + JSON.stringify(obj));
+
+    Patient.updateOne({ _id: req.params.id }, obj).exec(function (error, result) {
+        // If there are any errors, pass them to next in the correct format
+        if (error) return next(new Error(JSON.stringify(error.errors)))
+
+        // Send a 200 OK response
+        res.send(result)
+    })
 })
