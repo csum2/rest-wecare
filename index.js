@@ -4,6 +4,7 @@
 *   Functionality implemented:
 *   1. Add one patient info
 *   2. List all patients info
+*   3. View one patient info
 */
 
 var DEFAULT_PORT = 5000
@@ -141,4 +142,21 @@ server.get('/patients', function (req, res, next) {
         if (error) return next(new Error(JSON.stringify(error.errors)))
         res.send(result);
     });
+})
+
+
+// Get a single patient by the patient id
+server.get('/patients/:id', function (req, res, next) {
+    console.log('GET request: patients/' + req.params.id);
+
+    // Find a single patient by their id
+    Patient.find({ _id: req.params.id }).exec(function (error, patient) {
+        if (patient) {
+            // Send the patient if no issues
+            res.send(patient)
+        } else {
+            // Send 404 header if the patient doesn't exist
+            res.send(404)
+        }
+    })
 })
