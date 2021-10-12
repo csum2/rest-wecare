@@ -3,6 +3,7 @@
 *
 *   Functionality implemented:
 *   1. Add one patient info
+*   2. List all patients info
 */
 
 var DEFAULT_PORT = 5000
@@ -129,4 +130,15 @@ server.post('/patients', function (req, res, next) {
         // Send the patient if no issues
         res.send(201, result)
     })
+})
+
+
+// Get all patients in the system
+server.get('/patients', function (req, res, next) {
+    console.log('GET request: patients');
+    // Find every entity within the given collection
+    Patient.find({}).exec(function (error, result) {
+        if (error) return next(new Error(JSON.stringify(error.errors)))
+        res.send(result);
+    });
 })
