@@ -1,43 +1,53 @@
 /*  MAPD713 Enterprise Techs 2021Fall
-*   Group 3
-*
-*   Functionality implemented:
-*   1. Add one patient info
-*   2. List all patients info
-*   3. View one patient info
-*   4. Delete one patient info
-*   5. Update one patient info
-*/
+ *   Group 3  
+ *
+ *   *** All team members had contribution to the milestones ***
+ *
+ *   Functionality implemented for milestone #2:
+ *   1. Add one patient info
+ *   2. List all patients info
+ *   3. View one patient info
+ *   4. Delete one patient info
+ *   5. Update one patient info
+ * 
+ *   Functionality implemented for milestone #3:
+ *   1. Add medical data
+ *   2. Update medical data
+ *   3. Delete medical data
+ */
 
-var DEFAULT_PORT = 5000
-var DEFAULT_HOST = '127.0.0.1'
-var SERVER_NAME = 'wecare'
+var DEFAULT_PORT = 5000;
+var DEFAULT_HOST = "127.0.0.1";
+var SERVER_NAME = "wecare";
 
-var http = require('http');
+var http = require("http");
 var mongoose = require("mongoose");
 
 var port = process.env.PORT;
 var ipaddress = process.env.IP; // TODO: figure out which IP to use for the heroku
 
-// Here we find an appropriate database to connect to, defaulting to
-// localhost if we don't find one.  
+// Connecting to Mongo Atlas db - wecare-db.
 var uristring =
     process.env.MONGODB_URI ||
-    'mongodb://127.0.0.1:27017/data';
+    "mongodb+srv://group3:Centennial2021@wecare-db-cluster.qeg5w.mongodb.net/myFirstDatabase?retryWrites=true&w=majority";
 
 // Makes connection asynchronously.  Mongoose will queue up database
 // operations and release them when the connection is complete.
-mongoose.connect(uristring, { useNewUrlParser: true, useUnifiedTopology: true });
+mongoose.connect(uristring, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+});
 
 const db = mongoose.connection;
-db.on('error', console.error.bind(console, 'connection error:'));
-db.once('open', function () {
+db.on("error", console.error.bind(console, "connection error:"));
+db.once("open", function () {
     // we're connected!
-    console.log("!!!! Connected to db: " + uristring)
+    console.log("!!!! Connected to db: " + uristring);
 });
 
 // This is the schema.  Note the types, validation and trim
 // statements.  They enforce useful constraints on the data.
+// Add, update, delete of medicaldata is just replacing the data array
 var patientSchema = new mongoose.Schema({
     first_name: String,
     last_name: String,
@@ -48,68 +58,76 @@ var patientSchema = new mongoose.Schema({
     residential_address: String,
     emergency_contact: String,
     emergency_phone: String,
-    relationship: String
+    relationship: String,
+    medicaldata: [{
+        sortkey: String,
+        measuring_date: String,
+        measuring_time: String,
+        systolic_pressure: String,
+        diastolic_pressure: String,
+        respiratory_rate: String,
+        oxygen_level: String,
+        heartbeat_rate: String
+    }]
 });
 
 // Compiles the schema into a model, opening (or creating, if
 // nonexistent) the 'Patients' collection in the MongoDB database
-var Patient = mongoose.model('Patient', patientSchema);
+var Patient = mongoose.model("Patient", patientSchema);
 
-var errors = require('restify-errors');
-var restify = require('restify')
+var errors = require("restify-errors");
+var restify = require("restify"),
     // Create the restify server
-    , server = restify.createServer({ name: SERVER_NAME })
+    server = restify.createServer({ name: SERVER_NAME });
 
 if (typeof ipaddress === "undefined") {
     //  Log errors on OpenShift but continue w/ 127.0.0.1 - this
     //  allows us to run/test the app locally.
-    console.warn('No process.env.IP var, using default: ' + DEFAULT_HOST);
+    console.warn("No process.env.IP var, using default: " + DEFAULT_HOST);
     ipaddress = DEFAULT_HOST;
-};
+}
 
 if (typeof port === "undefined") {
-    console.warn('No process.env.PORT var, using default port: ' + DEFAULT_PORT);
+    console.warn("No process.env.PORT var, using default port: " + DEFAULT_PORT);
     port = DEFAULT_PORT;
-};
+}
 
 server.listen(port, ipaddress, function () {
-    console.log('Server %s listening at %s', server.name, server.url)
-    console.log('Resources:')
-    console.log(' /patients')
-    console.log(' /patients/:id')
-})
-
+    console.log("Server %s listening at %s", server.name, server.url);
+    console.log("Resources:");
+    console.log(" /patients");
+    console.log(" /patients/:id");
+});
 
 server
     // Allow the use of POST
     .use(restify.plugins.fullResponse())
 
     // Maps req.body to req.params
-    .use(restify.plugins.bodyParser())
-
+    .use(restify.plugins.bodyParser());
 
 // Create a new patient
-server.post('/patients', function (req, res, next) {
-    console.log('POST request: patients params=>' + JSON.stringify(req.params));
-    console.log('POST request: patients body=>' + JSON.stringify(req.body));
+server.post("/patients", function (req, res, next) {
+    console.log("POST request: patients params=>" + JSON.stringify(req.params));
+    console.log("POST request: patients body=>" + JSON.stringify(req.body));
     // Make sure name is defined
     if (req.body.first_name === undefined) {
         // If there are any errors, pass them to next in the correct format
-        return next(new errors.BadRequestError('first_name must be supplied'))
+        return next(new errors.BadRequestError("first_name must be supplied"));
     }
     if (req.body.last_name === undefined) {
         // If there are any errors, pass them to next in the correct format
-        return next(new errors.BadRequestError('last_name must be supplied'))
+        return next(new errors.BadRequestError("last_name must be supplied"));
     }
     // Make sure date of birth is defined
     if (req.body.date_of_birth === undefined) {
         // If there are any errors, pass them to next in the correct format
-        return next(new errors.BadRequestError('date_of_birth must be supplied'))
+        return next(new errors.BadRequestError("date_of_birth must be supplied"));
     }
     // Make sure contact phone is defined
     if (req.body.contact_phone === undefined) {
         // If there are any errors, pass them to next in the correct format
-        return next(new errors.BadRequestError('contact_phone must be supplied'))
+        return next(new errors.BadRequestError("contact_phone must be supplied"));
     }
 
     // Creating new patient.
@@ -123,85 +141,92 @@ server.post('/patients', function (req, res, next) {
         residential_address: req.body.residential_address,
         emergency_contact: req.body.emergency_contact,
         emergency_phone: req.body.emergency_phone,
-        relationship: req.body.relationship
+        relationship: req.body.relationship,
+        medicaldata: req.body.medicaldata,
     });
 
     // Create the patient and saving to db
     newPatient.save(function (error, result) {
         // If there are any errors, pass them to next in the correct format
-        if (error) return next(new Error(JSON.stringify(error.errors)))
+        if (error) return next(new Error(JSON.stringify(error.errors)));
         // Send the patient if no issues
-        res.send(201, result)
-    })
-})
-
+        res.send(201, result);
+    });
+});
 
 // Get all patients in the system
-server.get('/patients', function (req, res, next) {
-    console.log('GET request: patients');
+server.get("/patients", function (req, res, next) {
+    console.log("GET request: patients");
     // Find every entity within the given collection
     Patient.find({}).exec(function (error, result) {
-        if (error) return next(new Error(JSON.stringify(error.errors)))
+        if (error) return next(new Error(JSON.stringify(error.errors)));
         res.send(result);
     });
-})
-
+});
 
 // Get a single patient by the patient id
-server.get('/patients/:id', function (req, res, next) {
-    console.log('GET request: patients/' + req.params.id);
+server.get("/patients/:id", function (req, res, next) {
+    console.log("GET request: patients/" + req.params.id);
 
     // Find a single patient by their id
     Patient.find({ _id: req.params.id }).exec(function (error, patient) {
         if (patient) {
             // Send the patient if no issues
-            res.send(patient)
+            res.send(patient);
         } else {
             // Send 404 header if the patient doesn't exist
-            res.send(404)
+            res.send(404);
         }
-    })
-})
-
+    });
+});
 
 // Delete a single patient with the given id
-server.del('/patients/:id', function (req, res, next) {
-    console.log('DEL request: patients/' + req.params.id);
+server.del("/patients/:id", function (req, res, next) {
+    console.log("DEL request: patients/" + req.params.id);
     Patient.deleteOne({ _id: req.params.id }, function (error, result) {
         // If there are any errors, pass them to next in the correct format
-        if (error) return next(new Error(JSON.stringify(error.errors)))
+        if (error) return next(new Error(JSON.stringify(error.errors)));
 
         // Send a 200 OK response
-        res.send(result)
+        res.send(result);
     });
-})
-
+});
 
 // Upate a patient with the given id
-server.patch('/patients/:id', function (req, res, next) {
-    console.log('PATCH request: patients/' + req.params.id);
-    console.log('PATCH request: patients body=>' + JSON.stringify(req.body));
+server.patch("/patients/:id", function (req, res, next) {
+    console.log("PATCH request: patients/" + req.params.id);
+    console.log("PATCH request: patients body=>" + JSON.stringify(req.body));
 
     // Creating patching patient according to param
     var obj = new Object();
-    if (req.body.first_name !== undefined) obj.first_name = req.body.first_name
-    if (req.body.last_name !== undefined) obj.last_name = req.body.last_name
-    if (req.body.date_of_birth !== undefined) obj.date_of_birth = req.body.date_of_birth
-    if (req.body.biological_sex !== undefined) obj.biological_sex = req.body.biological_sex
-    if (req.body.email !== undefined) obj.email = req.body.email
-    if (req.body.contact_phone !== undefined) obj.contact_phone = req.body.contact_phone
-    if (req.body.residential_address !== undefined) obj.residential_address = req.body.residential_address
-    if (req.body.emergency_contact !== undefined) obj.emergency_contact = req.body.emergency_contact
-    if (req.body.emergency_phone !== undefined) obj.emergency_phone = req.body.emergency_phone
-    if (req.body.relationship !== undefined) obj.relationship = req.body.relationship
+    if (req.body.first_name !== undefined) obj.first_name = req.body.first_name;
+    if (req.body.last_name !== undefined) obj.last_name = req.body.last_name;
+    if (req.body.date_of_birth !== undefined)
+        obj.date_of_birth = req.body.date_of_birth;
+    if (req.body.biological_sex !== undefined)
+        obj.biological_sex = req.body.biological_sex;
+    if (req.body.email !== undefined) obj.email = req.body.email;
+    if (req.body.contact_phone !== undefined)
+        obj.contact_phone = req.body.contact_phone;
+    if (req.body.residential_address !== undefined)
+        obj.residential_address = req.body.residential_address;
+    if (req.body.emergency_contact !== undefined)
+        obj.emergency_contact = req.body.emergency_contact;
+    if (req.body.emergency_phone !== undefined)
+        obj.emergency_phone = req.body.emergency_phone;
+    if (req.body.relationship !== undefined)
+        obj.relationship = req.body.relationship;
+    if (req.body.medicaldata !== undefined)
+        obj.medicaldata = req.body.medicaldata;
 
-    console.log('Patch patient fields =>' + JSON.stringify(obj));
+    console.log("Patch patient fields =>" + JSON.stringify(obj));
 
     Patient.updateOne({ _id: req.params.id }, obj).exec(function (error, result) {
         // If there are any errors, pass them to next in the correct format
-        if (error) return next(new Error(JSON.stringify(error.errors)))
+        if (error) return next(new Error(JSON.stringify(error.errors)));
 
         // Send a 200 OK response
-        res.send(result)
-    })
-})
+        res.send(result);
+    });
+});
+
