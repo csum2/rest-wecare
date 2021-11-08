@@ -11,9 +11,10 @@
  *   5. Update one patient info
  * 
  *   Functionality implemented for milestone #3:
- *   1. Add medical data
- *   2. Update medical data
- *   3. Delete medical data
+ *   1. Add medical data via the patient level
+ *   2. Update medical data via the patient level
+ *   3. Delete medical data via the patient level
+ *   4. View one medical record by the given patient id and medicaldata id
  */
 
 var DEFAULT_PORT = 5000;
@@ -230,3 +231,25 @@ server.patch("/patients/:id", function (req, res, next) {
     });
 });
 
+// Get a single medical record by the patient id and medical id
+server.get("/patients/:pid/medical/:mid", function (req, res, next) {
+    console.log("GET request: patients/" + req.params.pid + "/medical/" + req.params.mid);
+
+    // Find a single patient by the id
+    Patient.find({ _id: req.params.pid }).exec(function (error, patient) {
+        if (patient) {
+            var medicaldata = patient[0].medicaldata.find(function (item) {
+                return item._id == req.params.mid;
+            });
+            // Send the medical data if no issues
+            if (medicaldata) {
+                res.send(medicaldata);
+            } else {
+                res.send(404);
+            }
+        } else {
+            // Send 404 header if the patient doesn't exist
+            res.send(404);
+        }
+    });
+});
