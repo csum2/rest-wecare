@@ -98,6 +98,7 @@ server.listen(port, ipaddress, function () {
     console.log("Resources:");
     console.log(" /patients");
     console.log(" /patients/:id");
+    console.log(" /patients/:pid/medicaldata/:mid");
 });
 
 server
@@ -171,7 +172,7 @@ server.get("/patients/:id", function (req, res, next) {
 
     // Find a single patient by their id
     Patient.find({ _id: req.params.id }).exec(function (error, patient) {
-        if (patient) {
+        if (patient && patient.length) {
             // Send the patient if no issues
             res.send(patient);
         } else {
@@ -237,7 +238,7 @@ server.get("/patients/:pid/medical/:mid", function (req, res, next) {
 
     // Find a single patient by the id
     Patient.find({ _id: req.params.pid }).exec(function (error, patient) {
-        if (patient) {
+        if (patient && patient.length) {
             var medicaldata = patient[0].medicaldata.find(function (item) {
                 return item._id == req.params.mid;
             });
