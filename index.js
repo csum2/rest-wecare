@@ -15,7 +15,8 @@
  *   2. Update medical data via the patient level
  *   3. Delete medical data via the patient level
  *   4. View one medical record by a given patient id and medicaldata id
- *   5. Post one medical record by a given patient id and medical resource name
+ *   5. Add one medical record by a given patient id and medical resource name
+ *   6. Delete one medical record by a given patient id and medicaldata id
  */
 
 var DEFAULT_PORT = 5000;
@@ -257,7 +258,7 @@ server.get("/patients/:pid/medical/:mid", function (req, res, next) {
     });
 });
 
-// Post a single medical record by the patient id
+// Add a single medical record by the patient id
 server.post("/patients/:pid/medical", function (req, res, next) {
     console.log("POST request: patients/" + req.params.pid);
 
@@ -281,8 +282,8 @@ server.post("/patients/:pid/medical", function (req, res, next) {
                 obj.oxygen_level = req.body.oxygen_level;
             if (req.body.heartbeat_rate !== undefined)
                 obj.heartbeat_rate = req.body.heartbeat_rate;
-            console.log(patient);
-            console.log(obj);
+            //console.log(patient);
+            //console.log(obj);
 
             Patient.updateOne({ _id: req.params.pid }, {
                 $push:
@@ -293,6 +294,35 @@ server.post("/patients/:pid/medical", function (req, res, next) {
 
                 // Send a 200 OK response
                 res.send(result);
+            });
+        } else {
+            // Send 404 header if the patient doesn't exist
+            res.send(404);
+        }
+    });
+});
+
+// Delete a single medical record by the patient id and the medical id
+server.del("/patients/:pid/medical/:mid", function (req, res, next) {
+    console.log("DEL request: patients/" + req.params.pid + "/medical/" + req.params.mid);
+
+    // Find a single patient by the id
+    Patient.find({ _id: req.params.pid }).exec(function (error, patient) {
+        if (patient && patient.length) {
+            //console.log(patient);
+            const medicalId = mongoose.Types.ObjectId(req.params.mid);  //this is the comment ID
+            console.log(medicalId);
+            Patient.updateOne({ _id: req.params.pid }, {
+                $pull: { medicaldata: { _id: medicalId } }
+            }, function (err, result) {
+                if (!err) {
+                    console.log("successfully deleted");
+                    // Send a 200 OK response
+                    res.send(result);
+                } else {
+                    console.log("err in deletion");
+                    res.send(404);
+                }
             });
         } else {
             // Send 404 header if the patient doesn't exist
