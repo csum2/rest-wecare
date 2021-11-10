@@ -14,7 +14,8 @@
  *   1. Add medical data via the patient level
  *   2. Update medical data via the patient level
  *   3. Delete medical data via the patient level
- *   4. View one medical record by the given patient id and medicaldata id
+ *   4. View one medical record by a given patient id and medicaldata id
+ *   5. Post one medical record by a given patient id and medical resource name
  */
 
 var DEFAULT_PORT = 5000;
@@ -98,7 +99,8 @@ server.listen(port, ipaddress, function () {
     console.log("Resources:");
     console.log(" /patients");
     console.log(" /patients/:id");
-    console.log(" /patients/:pid/medicaldata/:mid");
+    console.log(" /patients/:pid/medical");
+    console.log(" /patients/:pid/medical/:mid");
 });
 
 server
@@ -248,6 +250,50 @@ server.get("/patients/:pid/medical/:mid", function (req, res, next) {
             } else {
                 res.send(404);
             }
+        } else {
+            // Send 404 header if the patient doesn't exist
+            res.send(404);
+        }
+    });
+});
+
+// Post a single medical record by the patient id
+server.post("/patients/:pid/medical", function (req, res, next) {
+    console.log("POST request: patients/" + req.params.pid);
+
+    // Find a single patient by the id
+    Patient.find({ _id: req.params.pid }).exec(function (error, patient) {
+        if (patient && patient.length) {
+            var obj = new Object();
+            if (req.body.sortkey !== undefined)
+                obj.sortkey = req.body.sortkey;
+            if (req.body.measuring_date !== undefined)
+                obj.measuring_date = req.body.measuring_date;
+            if (req.body.measuring_time !== undefined)
+                obj.measuring_time = req.body.measuring_time;
+            if (req.body.systolic_pressure !== undefined)
+                obj.systolic_pressure = req.body.systolic_pressure;
+            if (req.body.diastolic_pressure !== undefined)
+                obj.diastolic_pressure = req.body.diastolic_pressure;
+            if (req.body.respiratory_rate !== undefined)
+                obj.respiratory_rate = req.body.respiratory_rate;
+            if (req.body.oxygen_level !== undefined)
+                obj.oxygen_level = req.body.oxygen_level;
+            if (req.body.heartbeat_rate !== undefined)
+                obj.heartbeat_rate = req.body.heartbeat_rate;
+            console.log(patient);
+            console.log(obj);
+
+            Patient.updateOne({ _id: req.params.pid }, {
+                $push:
+                    { 'medicaldata': obj }
+            }, { upsert: true }, function (error, result) {
+                // If there are any errors, pass them to next in the correct format
+                if (error) return next(new Error(JSON.stringify(error.errors)));
+
+                // Send a 200 OK response
+                res.send(result);
+            });
         } else {
             // Send 404 header if the patient doesn't exist
             res.send(404);
