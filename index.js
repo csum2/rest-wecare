@@ -17,6 +17,7 @@
  *   4. View one medical record by a given patient id and medicaldata id
  *   5. Add one medical record by a given patient id and medical resource name
  *   6. Delete one medical record by a given patient id and medicaldata id
+ *   7. Update one medical record by a given patient id and medicaldata id
  */
 
 var DEFAULT_PORT = 5000;
@@ -311,7 +312,7 @@ server.del("/patients/:pid/medical/:mid", function (req, res, next) {
         if (patient && patient.length) {
             //console.log(patient);
             const medicalId = mongoose.Types.ObjectId(req.params.mid);  //this is the comment ID
-            console.log(medicalId);
+            //console.log(medicalId);
             Patient.updateOne({ _id: req.params.pid }, {
                 $pull: { medicaldata: { _id: medicalId } }
             }, function (err, result) {
@@ -321,6 +322,42 @@ server.del("/patients/:pid/medical/:mid", function (req, res, next) {
                     res.send(result);
                 } else {
                     console.log("err in deletion");
+                    res.send(404);
+                }
+            });
+        } else {
+            // Send 404 header if the patient doesn't exist
+            res.send(404);
+        }
+    });
+});
+
+// Update a single medical record by the patient id and the medical id
+server.patch("/patients/:pid/medical/:mid", function (req, res, next) {
+    console.log("PATCH request: patients/" + req.params.pid + "/medical/" + req.params.mid);
+
+    // Find a single patient by the id
+    Patient.find({ _id: req.params.pid }).exec(function (error, patient) {
+        if (patient && patient.length) {
+            console.log(patient);
+            Patient.updateOne({ _id: req.params.pid, "medicaldata._id": req.params.mid }, {
+                $set: {
+                    "medicaldata.$.sortkey": req.body.sortkey,
+                    "medicaldata.$.measuring_date": req.body.measuring_date,
+                    "medicaldata.$.measuring_time": req.body.measuring_time,
+                    "medicaldata.$.systolic_pressure": req.body.systolic_pressure,
+                    "medicaldata.$.diastolic_pressure": req.body.diastolic_pressure,
+                    "medicaldata.$.respiratory_rate": req.body.respiratory_rate,
+                    "medicaldata.$.oxygen_level": req.body.oxygen_level,
+                    "medicaldata.$.heartbeat_rate": req.body.heartbeat_rate
+                }
+            }, function (err, result) {
+                if (!err) {
+                    console.log("successfully updated");
+                    // Send a 200 OK response
+                    res.send(result);
+                } else {
+                    console.log("err in updating");
                     res.send(404);
                 }
             });
