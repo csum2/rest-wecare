@@ -103,6 +103,7 @@ server.listen(port, ipaddress, function () {
     console.log(" /patients/:id");
     console.log(" /patients/:pid/medical");
     console.log(" /patients/:pid/medical/:mid");
+    console.log(" /patientnames/:name");
 });
 
 server
@@ -169,6 +170,20 @@ server.get("/patients", function (req, res, next) {
         res.send(result);
     });
 });
+
+// Get all patients with matching wildcard in patient firstname or last name in the system
+server.get("/patientnames/:name", function (req, res, next) {
+    console.log("GET request: patientnames/" + req.params.name);
+    // Find every entity within the given collection
+
+    //Patient.find({ first_name: new RegExp(req.params.name) }).exec(function (error, result) {
+    Patient.find({ $or: [{ first_name: new RegExp(req.params.name, "i") }, { last_name: new RegExp(req.params.name, "i") }] })
+        .exec(function (error, result) {
+            if (error) return next(new Error(JSON.stringify(error.errors)));
+            res.send(result);
+        });
+});
+
 
 // Get a single patient by the patient id
 server.get("/patients/:id", function (req, res, next) {
@@ -261,7 +276,7 @@ server.get("/patients/:pid/medical/:mid", function (req, res, next) {
 
 // Add a single medical record by the patient id
 server.post("/patients/:pid/medical", function (req, res, next) {
-    console.log("POST request: patients/" + req.params.pid);
+    console.log("POST request: patients/" + req.params.pid + "/medical");
 
     // Find a single patient by the id
     Patient.find({ _id: req.params.pid }).exec(function (error, patient) {
