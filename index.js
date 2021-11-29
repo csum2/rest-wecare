@@ -20,15 +20,12 @@
  *   7. Update one medical record by a given patient id and medicaldata id
  */
 
-var DEFAULT_PORT = 5000;
-var DEFAULT_HOST = "127.0.0.1";
 var SERVER_NAME = "wecare";
 
 var http = require("http");
 var mongoose = require("mongoose");
 
 var port = process.env.PORT;
-var ipaddress = process.env.IP; // TODO: figure out which IP to use for the heroku
 
 // Connecting to Mongo Atlas db - wecare-db.
 var uristring =
@@ -96,7 +93,7 @@ if (typeof port === "undefined") {
     port = DEFAULT_PORT;
 }
 
-server.listen(port, ipaddress, function () {
+server.listen(port, function () {
     console.log("Server %s listening at %s", server.name, server.url);
     console.log("Resources:");
     console.log(" /patients");
