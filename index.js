@@ -25,7 +25,7 @@ var SERVER_NAME = "wecare";
 var http = require("http");
 var mongoose = require("mongoose");
 
-var port = process.env.PORT;
+var PORT = process.env.PORT;
 
 // Connecting to Mongo Atlas db - wecare-db.
 var uristring =
@@ -81,19 +81,7 @@ var restify = require("restify"),
     // Create the restify server
     server = restify.createServer({ name: SERVER_NAME });
 
-if (typeof ipaddress === "undefined") {
-    //  Log errors on OpenShift but continue w/ 127.0.0.1 - this
-    //  allows us to run/test the app locally.
-    console.warn("No process.env.IP var, using default: " + DEFAULT_HOST);
-    ipaddress = DEFAULT_HOST;
-}
-
-if (typeof port === "undefined") {
-    console.warn("No process.env.PORT var, using default port: " + DEFAULT_PORT);
-    port = DEFAULT_PORT;
-}
-
-server.listen(port, function () {
+server.listen(PORT, function () {
     console.log("Server %s listening at %s", server.name, server.url);
     console.log("Resources:");
     console.log(" /patients");
