@@ -77,6 +77,13 @@ var patientSchema = new mongoose.Schema({
 // nonexistent) the 'Patients' collection in the MongoDB database
 var Patient = mongoose.model("Patient", patientSchema);
 
+var corsMiddleware = require("restify-cors-middleware2");
+var cors = corsMiddleware({
+    preflightMaxAge: 5,
+    origins: ["*"],
+    allowHeaders:["X-App-Version"],
+    exposeHeaders:[]
+  });
 var errors = require("restify-errors");
 var restify = require("restify"),
     // Create the restify server
@@ -92,22 +99,17 @@ server.listen(PORT, function () {
     console.log(" /patientnames/:name");
 });
 
+server.pre(cors.preflight);
 server
+    // Support cors
+    .use(cors.actual)
+
     // Allow the use of POST
     .use(restify.plugins.fullResponse())
 
     // Maps req.body to req.params
     .use(restify.plugins.bodyParser());
-/*
-    // Support cors
-    use(
-        function crossOrigin(req,res,next) {
-          res.header("Access-Control-Allow-Origin", "*");
-          res.header("Access-Control-Allow-Headers", "X-Requested-With");
-          return next();
-        }
-    );
-*/
+
 // Create a new patient
 server.post("/patients", function (req, res, next) {
     console.log("POST request: patients params=>" + JSON.stringify(req.params));
