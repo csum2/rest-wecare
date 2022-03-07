@@ -97,8 +97,8 @@ server
     .use(restify.plugins.fullResponse())
 
     // Maps req.body to req.params
-    .use(restify.plugins.bodyParser())
-
+    .use(restify.plugins.bodyParser());
+/*
     // Support cors
     use(
         function crossOrigin(req,res,next) {
@@ -107,7 +107,7 @@ server
           return next();
         }
     );
-
+*/
 // Create a new patient
 server.post("/patients", function (req, res, next) {
     console.log("POST request: patients params=>" + JSON.stringify(req.params));
