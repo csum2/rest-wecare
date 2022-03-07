@@ -18,6 +18,7 @@
  *   5. Add one medical record by a given patient id and medical resource name
  *   6. Delete one medical record by a given patient id and medicaldata id
  *   7. Update one medical record by a given patient id and medicaldata id
+ *   8. List all patients by matching first name or last name
  */
 
 var SERVER_NAME = "wecare";
@@ -96,7 +97,16 @@ server
     .use(restify.plugins.fullResponse())
 
     // Maps req.body to req.params
-    .use(restify.plugins.bodyParser());
+    .use(restify.plugins.bodyParser())
+
+    // Support cors
+    use(
+        function crossOrigin(req,res,next) {
+          res.header("Access-Control-Allow-Origin", "*");
+          res.header("Access-Control-Allow-Headers", "X-Requested-With");
+          return next();
+        }
+    );
 
 // Create a new patient
 server.post("/patients", function (req, res, next) {
@@ -198,7 +208,7 @@ server.del("/patients/:id", function (req, res, next) {
     });
 });
 
-// Upate a patient with the given id
+// Update a patient with the given id
 server.patch("/patients/:id", function (req, res, next) {
     console.log("PATCH request: patients/" + req.params.id);
     console.log("PATCH request: patients body=>" + JSON.stringify(req.body));
