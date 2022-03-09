@@ -175,6 +175,7 @@ server.get("/patientnames/:name", function (req, res, next) {
 
     //Patient.find({ first_name: new RegExp(req.params.name) }).exec(function (error, result) {
     Patient.find({ $or: [{ first_name: new RegExp(req.params.name, "i") }, { last_name: new RegExp(req.params.name, "i") }] })
+        .sort( { first_name: 1, last_name: 1 } )
         .exec(function (error, result) {
             if (error) return next(new Error(JSON.stringify(error.errors)));
             res.send(result);
