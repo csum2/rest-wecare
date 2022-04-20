@@ -28,7 +28,7 @@ var mongoose = require("mongoose");
 
 var PORT = process.env.PORT;
 
-// Connecting to Mongo Atlas db - wecare-db.
+// Connecting to Mongo Atlas db - wecare-db. Mongodb link is changed to use Samuel's account
 var uristring =
     process.env.MONGODB_URI ||
     "mongodb+srv://group3:Centennial2021@wecare-db-cluster.m2jav.mongodb.net/myFirstDatabase?retryWrites=true&w=majority";
