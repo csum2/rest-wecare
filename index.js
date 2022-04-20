@@ -31,7 +31,7 @@ var PORT = process.env.PORT;
 // Connecting to Mongo Atlas db - wecare-db.
 var uristring =
     process.env.MONGODB_URI ||
-    "mongodb+srv://group3:Centennial2021@wecare-db-cluster.qeg5w.mongodb.net/myFirstDatabase?retryWrites=true&w=majority";
+    "mongodb+srv://group3:Centennial2021@wecare-db-cluster.m2jav.mongodb.net/myFirstDatabase?retryWrites=true&w=majority";
 
 // Makes connection asynchronously.  Mongoose will queue up database
 // operations and release them when the connection is complete.
